@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .home-page {
+    @apply h-screen w-screen fixed;
+
+    /* background-image: linear-gradient(
+      135deg,
+      hsl(277deg 93% 83%) 0%,
+      hsl(250deg 62% 76%) 40%,
+      hsl(225deg 46% 63%) 60%,
+      hsl(212deg 40% 48%) 74%,
+      hsl(202deg 59% 34%) 85%,
+      hsl(194deg 91% 21%) 93%,
+      hsl(190deg 100% 14%) 99%,
+      hsl(186deg 91% 9%) 100%
+    ); */
+    background-image: linear-gradient(
+      130deg,
+      hsl(169deg 78% 15%) 0%,
+      hsl(169deg 100% 12%) 39%,
+      hsl(168deg 100% 11%) 53%,
+      hsl(167deg 100% 9%) 62%,
+      hsl(166deg 100% 8%) 69%,
+      hsl(164deg 100% 7%) 75%,
+      hsl(160deg 100% 6%) 80%,
+      hsl(152deg 100% 5%) 86%,
+      hsl(134deg 100% 4%) 92%,
+      hsl(0deg 0% 0%) 100%
+    );
+  }
+  .home-page-container {
+    @apply mt-24 mx-8 min-h-fit drop-shadow-lg shadow-black;
+
+    /* background-image: linear-gradient(
+      135deg,
+      hsl(277deg 63% 65%) 0%,
+      hsl(249deg 86% 74%) 40%,
+      hsl(223deg 100% 72%) 60%,
+      hsl(206deg 100% 63%) 74%,
+      hsl(196deg 100% 50%) 85%,
+      hsl(192deg 100% 50%) 93%,
+      hsl(189deg 100% 50%) 99%,
+      hsl(186deg 100% 50%) 100%
+    ); */
+    background-image: linear-gradient(
+      305deg,
+      #024035 0%,
+      hsl(169deg 96% 15%) 7%,
+      hsl(168deg 98% 16%) 14%,
+      hsl(168deg 100% 18%) 22%,
+      hsl(168deg 100% 19%) 31%,
+      #006b56 41%,
+      hsl(168deg 100% 23%) 51%,
+      hsl(167deg 100% 24%) 62%,
+      hsl(167deg 100% 26%) 75%,
+      hsl(167deg 100% 28%) 100%
+    );
+    -webkit-box-shadow: inset -2px 2px 34px -8px rgb(139, 255, 236);
+    -moz-box-shadow: inset -2px 2px 34px -8px rgb(139, 255, 236);
+    box-shadow: inset -2px 2px 34px -8px rgb(139, 255, 236);
+    height: 83%;
+    border-radius: 20px;
+    border-top-left-radius: 20%;
+  }
+  .button {
+    @apply hover:bg-[#00fdcb] hover:text-[#029275] mt-5 rounded-3xl py-1 px-4 text-white border-[#00fdcb] border-2 hover:drop-shadow-lg;
+    background-image: linear-gradient(
+      270deg,
+      #029275 0%,
+      hsl(168deg 98% 29%) 11%,
+      hsl(168deg 98% 30%) 22%,
+      hsl(168deg 99% 31%) 33%,
+      hsl(168deg 99% 31%) 44%,
+      hsl(168deg 99% 32%) 56%,
+      hsl(167deg 99% 32%) 67%,
+      hsl(167deg 99% 33%) 78%,
+      hsl(167deg 98% 34%) 89%,
+      hsl(167deg 98% 35%) 100%
+    );
+  }
+  .button:hover {
+    background-image: none;
+  }
+  .sidebar {
+    @apply m-8 min-h-fit drop-shadow-lg;
+
+    background-image: linear-gradient(
+      305deg,
+      #024035 0%,
+      hsl(169deg 96% 15%) 7%,
+      hsl(168deg 98% 16%) 14%,
+      hsl(168deg 100% 18%) 22%,
+      hsl(168deg 100% 19%) 31%,
+      hsl(168deg 100% 21%) 41%,
+      hsl(168deg 100% 23%) 51%,
+      hsl(167deg 100% 24%) 62%,
+      hsl(167deg 100% 26%) 75%,
+      hsl(167deg 100% 28%) 100%
+    );
+    height: 83%;
+    border-radius: 20px;
+  }
+  *::-webkit-scrollbar {
+    width: 15px;
+    display: none;
+  }
+
+  /* *::-webkit-scrollbar-track {
+    background: hsl(167deg 100% 28%) 100%;
+    border-radius: 5px;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: #024035;
+    border-radius: 14px;
+    border: 3px solid hsl(169deg 94% 13%);
+  } */
+}
