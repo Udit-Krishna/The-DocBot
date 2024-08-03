@@ -8,7 +8,7 @@ from langchain_huggingface import HuggingFaceEndpoint
 from langchain.chains import LLMChain
 from langchain_core.prompts import PromptTemplate
 from dotenv import load_dotenv
-import os, pickle
+import os
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import load_img,img_to_array
@@ -109,7 +109,7 @@ async def add_user(request: Request):
 async def check_user(request :Request):
     data = await request.json()
     unique_id = data['unique_id']
-    results = session.query(User).filter( User.unique_id == unique_id)
+    results = session.query(User).filter(User.unique_id == unique_id)
     logger.debug(data)
     ans = []
     for row in results:
@@ -127,7 +127,7 @@ async def chat_bot(request: Request):
     unique_id = data['unique_id']
     message = data['message']
     if isFirst:
-        row = session.query( Chat).filter( Chat.unique_id == unique_id).first()
+        row = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         if row:
             print(row)
             session.delete(row)
@@ -135,16 +135,16 @@ async def chat_bot(request: Request):
         chat =  Chat(unique_id, " ")
         session.add(chat)
         session.commit()
-        results = session.query( User).filter( User.unique_id == unique_id).first()
+        results = session.query(User).filter(User.unique_id == unique_id).first()
         message = f"I am a {results.age} years old {results.gender}. My height is {results.height}cms and my weight is {results.weight}kgs. " + message
         response = llm_chain.run(question=message)
-        results = session.query( Chat).filter( Chat.unique_id == unique_id).first()
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         results.chat_content += message + response
         session.commit()
-        results = session.query( Chat).filter( Chat.unique_id == unique_id).first()
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         return JSONResponse(content={"Response" : response, "History": f"{results.chat_content}"}, status_code=200)
     else:
-        results = session.query( Chat).filter( Chat.unique_id == unique_id).first()
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         chat_content = results.chat_content
         message_now = chat_content +"\n"+ message
         response = llm_chain.run(question=message_now)
