@@ -7,19 +7,20 @@ from sqlalchemy.orm import sessionmaker
 from langchain_huggingface import HuggingFaceEndpoint
 from langchain.chains import LLMChain
 from langchain_core.prompts import PromptTemplate
-from dotenv import load_dotenv
+from langchain_community.vectorstores import FAISS
+from langchain.chains.question_answering import load_qa_chain
+from langchain_huggingface import HuggingFaceEmbeddings
 import os
 import numpy as np
 from tensorflow.keras.models import load_model
 from tensorflow.keras.utils import load_img,img_to_array
+
+
 import logging
-
-
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
 
-
-
+from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv('HUGGINGFACEHUB_API_TOKEN')
 
@@ -74,20 +75,25 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 llm = HuggingFaceEndpoint(
-    repo_id="meta-llama/Meta-Llama-3-8B-Instruct",
+    repo_id="mistralai/Mistral-Nemo-Instruct-2407",
     task="text-generation",
-    max_new_tokens=150,
+    max_new_tokens=180,
     do_sample=False,
     temperature=0.1,
     token=api_key
 )
-template = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-You are an AI Medical Chatbot Assistant, provide informative responses to your inquiries. Do not repeat yourself in your responses and do not ask another question. Do not be verbose in your response and make it strictly around 200 words.
-If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-About the suggestion to consult a doctor, always have it in one line and make it short and crisp. Don't add any note. I need only the response to the question. Suggest medications if inquired.<|eot_id|>
-<|start_header_id|>user<|end_header_id|> {question} <|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
-prompt = PromptTemplate.from_template(template)
-llm_chain = LLMChain(prompt=prompt, llm=llm)
+embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+vector_store = FAISS.load_local("medical-vectorstore", embeddings, allow_dangerous_deserialization=True)
+
+def chatbot_response(user_question, age, gender, height, weight):
+    docs = vector_store.similarity_search(user_question, k=3)
+    chain = load_qa_chain(llm, chain_type="stuff")
+    response = chain.run(input_documents=docs, question=
+    f"""You are an AI Medical Chatbot Assistant, provide informative responses to your inquiries. Do not repeat yourself in your responses and do not ask another question. Do not be verbose in your response and strictly never cross 150 words.
+If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. You are provided with documents related to the user question. Use the documents to answer the user question.
+If the answer is not available in the provided documents, suggest the appropriate doctor to consult and make it short and crisp. Suggest medications if inquired. Always answer in second person grammar. Do not add any note at the end of the response.
+Do not explicitly diagnose any medical condition. Context: The patient is a {age} years old {gender} of height {height}cms and weight {weight}kgs.""")
+    return response
 
 
 @app.post("/add-user", description="Add User to the Database")
@@ -136,8 +142,7 @@ async def chat_bot(request: Request):
         session.add(chat)
         session.commit()
         results = session.query(User).filter(User.unique_id == unique_id).first()
-        message = f"I am a {results.age} years old {results.gender}. My height is {results.height}cms and my weight is {results.weight}kgs. " + message
-        response = llm_chain.run(question=message)
+        response = chatbot_response(message, results.age, results.gender, results.height, results.weight)
         results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         results.chat_content += message + response
         session.commit()
@@ -147,7 +152,9 @@ async def chat_bot(request: Request):
         results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         chat_content = results.chat_content
         message_now = chat_content +"\n"+ message
-        response = llm_chain.run(question=message_now)
+        results = session.query(User).filter(User.unique_id == unique_id).first()
+        response = chatbot_response(message_now, results.age, results.gender, results.height, results.weight)
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         results.chat_content = message_now + response
         session.commit()
         return JSONResponse(content={"Response" : response, "History": f"{results.chat_content}"}, status_code=200)
@@ -170,7 +177,7 @@ async def chat_bot(request: Request):
 
 @app.post("/predict/brain-tumor")
 def predict_brain_tumor(file: UploadFile = File(...)):
-    model = load_model('brain_tumor.keras')
+    model = load_model('models/brain_tumor.keras')
     with open(f"{file.filename}", "wb+") as file_object:
         file_object.write(file.file.read())
     test_image = load_img(f'{file.filename}',target_size=(64,64))
