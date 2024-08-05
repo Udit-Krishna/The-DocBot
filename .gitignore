@@ -29,3 +29,4 @@ dist-ssr
 # Python Env
 backend-env/
 .venv/
+__pycache__/
