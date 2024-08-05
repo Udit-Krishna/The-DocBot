@@ -91,7 +91,7 @@ def chatbot_response(user_question, age, gender, height, weight):
     f"""You are an AI Medical Chatbot Assistant, provide informative responses to your inquiries. Do not repeat yourself in your responses and do not ask another question. Do not be verbose in your response and strictly never cross 150 words.
 If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. You are provided with documents related to the user question. Use the documents to answer the user question.
 If the answer is not available in the provided documents, suggest the appropriate doctor to consult and make it short and crisp. Suggest medications if inquired. Always answer in second person grammar. Do not add any note at the end of the response.
-Do not explicitly diagnose any medical condition. Context: The patient is a {age} years old {gender} of height {height}cms and weight {weight}kgs.""")
+Do not explicitly diagnose any medical condition. Context: The patient is a {age} years old {gender} of height {height}cms and weight {weight}kgs. You might use the chat history to provide the appropriate response: {user_question}""")
     return response
 
 def brain_tumor_chatbot_response(user_question, age, gender, height, weight):
