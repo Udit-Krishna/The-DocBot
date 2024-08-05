@@ -65,7 +65,7 @@ class Chat(Base):
     def __repr__(self):
         return f"{self.unique_id},{self.chat_content}"
 
-DATABASE_URL = "sqlite:///test.db"
+DATABASE_URL = "sqlite:///database.db"
 engine = create_engine(DATABASE_URL, echo=True)
 Base.metadata.create_all(bind=engine)
 
