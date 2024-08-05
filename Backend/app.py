@@ -10,8 +10,8 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain_huggingface import HuggingFaceEmbeddings
 import os
 import numpy as np
-from tensorflow.keras.models import load_model
-from tensorflow.keras.utils import load_img,img_to_array
+from tensorflow.keras.models import load_model # type: ignore
+from tensorflow.keras.utils import load_img,img_to_array # type: ignore
 
 
 import logging
