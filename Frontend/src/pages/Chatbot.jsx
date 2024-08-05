@@ -143,10 +143,18 @@ function Chatbot() {
             onKeyDown={handleEnter}
           />
           <button
-            className="py-2 px-4 items-center hover:bg-[#08f8cb]"
+            className={!question?"py-2 px-4 items-center":"py-2 px-4 items-center hover:bg-[#08f8cb]"}
             onClick={handleSubmit}
+            disabled={!question}
           >
-            <img src={send} className="object-contain w-6" />
+            <img
+              src={send}
+              className={
+                !question
+                  ? "object-contain w-6 opacity-10"
+                  : "object-contain w-6"
+              }
+            />
           </button>
         </div>
       </div>
@@ -155,3 +163,4 @@ function Chatbot() {
 }
 
 export default Chatbot;
+f

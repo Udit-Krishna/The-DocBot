@@ -126,7 +126,7 @@ function Login() {
                 type="text"
                 placeholder={name}
                 value={name}
-                className="p-2 bg-inherit text-white placeholder:text-white focus:outline-none text-lg font-semibold disabled:text-[#4a7b72]"
+                className="p-2 bg-inherit text-white placeholder:text-white focus:outline-none text-lg font-semibold"
                 disabled
               />
             </div>
@@ -138,7 +138,7 @@ function Login() {
                 type="text"
                 placeholder={email}
                 value={email}
-                className="p-2 bg-inherit text-white placeholder:text-white focus:outline-none text-lg font-semibold disabled:text-[#4a7b72]"
+                className="p-2 bg-inherit text-white placeholder:text-white focus:outline-none text-lg font-semibold"
                 disabled
               />
             </div>
@@ -150,7 +150,7 @@ function Login() {
                 type="text"
                 placeholder="Enter age"
                 value={age}
-                className="p-2 bg-inherit text-white placeholder:text-white focus:outline-none text-lg font-semibold disabled:text-[#4a7b72]"
+                className="p-2 bg-inherit text-white placeholder:text-[#4a7b72] focus:outline-none text-lg font-semibold"
                 disabled={dataFound}
                 onChange={(e) => setAge(e.target.value)}
               />
@@ -163,7 +163,7 @@ function Login() {
                 type="text"
                 placeholder="Enter height"
                 value={height}
-                className="p-2 bg-inherit text-white placeholder:text-white focus:outline-none text-lg font-semibold disabled:text-[#4a7b72]"
+                className="p-2 bg-inherit text-white placeholder:text-[#4a7b72] focus:outline-none text-lg font-semibold"
                 disabled={dataFound}
                 onChange={(e) => setHeight(e.target.value)}
               />
@@ -176,7 +176,7 @@ function Login() {
                 type="text"
                 placeholder="Enter weight"
                 value={weight}
-                className="p-2 bg-inherit text-white placeholder:text-white focus:outline-none text-lg font-semibold disabled:text-[#4a7b72]"
+                className="p-2 bg-inherit text-white placeholder:text-[#4a7b72] focus:outline-none text-lg font-semibold "
                 disabled={dataFound}
                 onChange={(e) => setWeight(e.target.value)}
               />
@@ -189,7 +189,7 @@ function Login() {
                 type="text"
                 placeholder="Enter gender"
                 value={gender}
-                className="p-2 bg-inherit text-white placeholder:text-white focus:outline-none text-lg font-semibold disabled:text-[#4a7b72]"
+                className="p-2 bg-inherit text-white placeholder:text-[#4a7b72] focus:outline-none text-lg font-semibold "
                 disabled={dataFound}
                 onChange={(e) => setGender(e.target.value)}
               />
