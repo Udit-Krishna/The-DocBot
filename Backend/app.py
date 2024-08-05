@@ -77,7 +77,7 @@ llm = HuggingFaceEndpoint(
     task="text-generation",
     max_new_tokens=180,
     do_sample=False,
-    temperature=0.5,
+    temperature=0.25,
     token=api_key
 )
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
