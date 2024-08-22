@@ -37,17 +37,16 @@ function Diagnosis() {
     const response = await api.post("/predict/brain-tumor", formData);
     if (response.statusText == "OK") {
       setPrediction(response.data.prediction);
-      console.log(prediction);
-      !prediction
+      response.data.prediction
         ? setMessages([
             {
-              text: "Yes, RIP",
+              text: "Yes, you have cancer !",
               isBot: true,
             },
           ])
         : setMessages([
             {
-              text: "No, you are blessed not to have cancer",
+              text: "No, you are blessed not to have cancer.",
               isBot: true,
             },
           ]);
@@ -209,13 +208,15 @@ function Diagnosis() {
                 type="text"
                 name="Chat"
                 placeholder={
-                  prediction ? "Send a message.." : "Submit to check prediction"
+                  prediction !== ""
+                    ? "Send a message.."
+                    : "Submit to check prediction"
                 }
                 className="w-full p-4 bg-inherit text-white placeholder:text-white focus:outline-none text-lg"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 onKeyDown={handleEnter}
-                disabled={!prediction}
+                disabled={prediction === ""}
               />
             )}
             <button
@@ -225,7 +226,9 @@ function Diagnosis() {
                   : "py-2 px-4 items-center hover:bg-[#08f8cb]"
               }
               onClick={prediction != "" ? sendMessage : handleFileSubmit}
-              disabled={image == ""?true:prediction == ""?false:!question}
+              disabled={
+                image == "" ? true : prediction === "" ? false : !question
+              }
             >
               <img src={send} className="object-contain w-6" />
             </button>
