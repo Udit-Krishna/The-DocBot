@@ -31,13 +31,27 @@ function Diagnosis() {
   };
 
   const handleFileSubmit = async () => {
-
     const formData = new FormData();
     formData.append("file", image);
 
     const response = await api.post("/predict/brain-tumor", formData);
-    if (response.statusText=="OK"){setPrediction(response.data.prediction);console.log(prediction)}
-    
+    if (response.statusText == "OK") {
+      setPrediction(response.data.prediction);
+      console.log(prediction);
+      !prediction
+        ? setMessages([
+            {
+              text: "Yes, RIP",
+              isBot: true,
+            },
+          ])
+        : setMessages([
+            {
+              text: "No, you are blessed not to have cancer",
+              isBot: true,
+            },
+          ]);
+    }
   };
 
   const { name, email, profile } = useContext(UserContext);
@@ -45,12 +59,7 @@ function Diagnosis() {
   const [count, setCount] = useState(0);
   const [question, setQuestion] = useState("");
   const navigate = useNavigate();
-  const [messages, setMessages] = useState([
-    {
-      text: `Hi ${name}! I am theDocbot. How may i assist you today?`,
-      isBot: true,
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     if (msgFocus.current) {
@@ -59,21 +68,9 @@ function Diagnosis() {
   }, [messages]);
 
   const handleEnter = async (e) => {
-    if (e.key == "Enter") await handleSubmit();
+    if (e.key == "Enter") await sendMessage();
   };
-
-  const reset = () => {
-    setQuestion("");
-    setMessages([
-      {
-        text: `Hi ${name}! I am theDocbot. How may i assist you today?`,
-        isBot: true,
-      },
-    ]);
-    setCount(0);
-  };
-
-  const handleSubmit = async () => {
+  const sendMessage = async (e) => {
     const text = question;
     setQuestion("");
     setMessages([...messages, { text: text, isBot: false }]);
@@ -83,7 +80,7 @@ function Diagnosis() {
       unique_id: email,
       message: question ? question : "Hi",
     });
-    const response = await api.post("/chat-bot", content);
+    const response = await api.post("/chat-bot/brain-tumor", content);
     setMessages([
       ...messages,
       { text: text, isBot: false },
@@ -92,6 +89,14 @@ function Diagnosis() {
     setQuestion("");
     console.log(response.data.History);
   };
+  const reset = () => {
+    setQuestion("");
+    setMessages([]);
+    setImage("");
+    setPrediction("");
+    setCount(0);
+  };
+
   return (
     <>
       <div className="home-page flex">
@@ -129,9 +134,8 @@ function Diagnosis() {
               <span className="text-white font-semibold">New chat</span>
             </button>
           </div>
-          <div className="bg-[rgb(96, 165 ,250)] backdrop-filter backdrop-blur-sm bg-opacity-50 rounded-xl px-6 bottom-10 absolute">
-            <Feature name="X Ray diagnosis" />
-            <Feature name="Medical record diagnosis" />
+          <div className="bg-[rgb(96, 165 ,250)] backdrop-filter backdrop-blur-sm bg-opacity-50 rounded-xl mx-5">
+            <Feature name="Chatbot" />
           </div>
         </div>
         <div className="sidebar h-[93%] w-[70%] overflow-hidden">
@@ -145,7 +149,7 @@ function Diagnosis() {
             <div className="flex mr-4 justify-end mt-10">
               <div
                 onClick={handleClick}
-                className="items-center flex space-x-10 border-2  w-[47%] border-[#024035] bg-[#029275] bg-opacity-40 rounded-3xl p-4  z-50 drop-shadow-md mr-4 text-white"
+                className="flex justify-center border-2  w-[30%] border-[#024035] bg-[#029275] bg-opacity-40 rounded-3xl p-4  z-50 drop-shadow-md mr-4 text-white"
               >
                 {image ? (
                   <img
@@ -155,7 +159,42 @@ function Diagnosis() {
                 ) : (
                   <img src={xray} className="h-28 object-contain" />
                 )}
-                <span>Click to upoad image</span>
+              </div>
+              <img
+                src={profile ? profile : user}
+                className=" w-10 h-10 self-center object-contain drop-shadow-md rounded-full"
+              />
+            </div>
+            {prediction === "" ? (
+              <></>
+            ) : (
+              <>
+                {messages.map((message, i) => {
+                  if (message.isBot == true) {
+                    return <BotChat key={i} message={message.text} />;
+                  } else if (message.text) {
+                    return (
+                      <UserChat
+                        key={i}
+                        message={message.text}
+                        img={profile ? profile : user}
+                      />
+                    );
+                  }
+                })}
+              </>
+            )}
+            <div ref={msgFocus} />
+          </div>
+          <div
+            className="absolute bottom-2 left-12 w-[90%] bg-[#029275] flex overflow-hidden backdrop-filter backdrop-blur-sm bg-opacity-50 rounded-xl z-50 drop-shadow-md"
+            onClick={image ? null : handleClick}
+          >
+            {!image ? (
+              <>
+                <p className="w-full p-4 bg-inherit text-white placeholder:text-white focus:outline-none text-lg">
+                  Click to upload image
+                </p>
                 <input
                   type="file"
                   id="file-selector"
@@ -164,44 +203,29 @@ function Diagnosis() {
                   style={{ display: "none" }}
                   onChange={handleChange}
                 />
-              </div>
-              <img
-                src={profile ? profile : user}
-                className=" w-10 h-10 self-center object-contain drop-shadow-md rounded-full"
-              />
-            </div>
-            {prediction == true || prediction == false ? (
-              <BotChat
-                message={
-                  prediction == false
-                    ? "No, you are blessed not to have cancer"
-                    : "Yes, RIP"
-                }
-              />
-            ) : (
-              <></>
-            )}
-            <div ref={msgFocus} />
-          </div>
-          <div className="absolute bottom-2 left-12 w-[90%] bg-[#029275] flex overflow-hidden backdrop-filter backdrop-blur-sm bg-opacity-50 rounded-xl z-50 drop-shadow-md">
-            {image ? (
-              <p className="w-full p-4 bg-inherit text-white placeholder:text-white focus:outline-none text-lg">
-                Upload image for analysis
-              </p>
+              </>
             ) : (
               <input
                 type="text"
                 name="Chat"
-                placeholder="Send a message.."
+                placeholder={
+                  prediction ? "Send a message.." : "Submit to check prediction"
+                }
                 className="w-full p-4 bg-inherit text-white placeholder:text-white focus:outline-none text-lg"
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 onKeyDown={handleEnter}
+                disabled={!prediction}
               />
             )}
             <button
-              className="py-2 px-4 items-center hover:bg-[#08f8cb]"
-              onClick={handleFileSubmit}
+              className={
+                image == ""
+                  ? "py-2 px-4 items-center"
+                  : "py-2 px-4 items-center hover:bg-[#08f8cb]"
+              }
+              onClick={prediction != "" ? sendMessage : handleFileSubmit}
+              disabled={image == ""?true:prediction == ""?false:!question}
             >
               <img src={send} className="object-contain w-6" />
             </button>
