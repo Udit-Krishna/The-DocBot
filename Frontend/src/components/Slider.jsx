@@ -22,7 +22,7 @@ function Slider() {
       <Swiper
         grabCursor={true}
         autoplay={{
-          delay: 2500,
+          delay: 5000,
           disableOnInteraction: false,
         }}
         loop={true}
@@ -31,7 +31,7 @@ function Slider() {
           prev: {
             shadow: true,
             translate: ["-20%", 0, -1],
-            opacity:0
+            opacity: 0,
           },
           next: {
             translate: ["100%", 0, 0],
@@ -40,10 +40,42 @@ function Slider() {
         modules={[EffectCreative, Autoplay]}
         className="mySwiper3"
       >
-        <SwiperSlide>Slide 1</SwiperSlide>
-        <SwiperSlide>Slide 2</SwiperSlide>
-        <SwiperSlide>Slide 3</SwiperSlide>
-        <SwiperSlide>Slide 4</SwiperSlide>
+        <SwiperSlide>
+          <div className="m-10">
+            "Doc Bot is your personal health assistant! It provides quick,
+            reliable medical advice through its smart chatbot and can even
+            analyze brain scans to detect potential tumors. It’s like having a
+            doctor and a medical lab at your fingertips!"
+          </div>
+        </SwiperSlide>
+        <SwiperSlide>
+          <div className="m-10">
+            "Doc Bot’s medical chatbot is your go-to for quick and trustworthy
+            health advice. It’s like having a virtual doctor available 24/7 to
+            help you understand your symptoms, answer your health questions, and
+            provide guidance on what to do next. No appointments, just instant
+            support whenever you need it."
+          </div>
+        </SwiperSlide>
+        <SwiperSlide>
+          <div className="m-10">
+            "Doc Bot’s brain tumor image analysis feature is like having a
+            cutting-edge radiologist at your service. It uses advanced AI to
+            scan brain images and detect potential tumors with precision,
+            providing you with early insights that could be life-saving. Trust
+            in technology that looks out for your health, every step of the
+            way."
+          </div>
+        </SwiperSlide>
+        <SwiperSlide>
+          <div className="m-10">
+            "With Doc Bot, you're not just receiving medical insights; you're
+            gaining a powerful tool for proactive health management. Harness
+            cutting-edge technology to stay informed, take control, and gain
+            peace of mind, knowing you're always a step ahead in safeguarding
+            your well-being."
+          </div>
+        </SwiperSlide>
       </Swiper>
     </div>
   );

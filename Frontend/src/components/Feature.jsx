@@ -9,12 +9,12 @@ function Feature({ name }) {
    const { loggedIn } = useContext(UserContext);
   return (
     <button
-      onClick={() =>loggedIn? navigate(name):navigate("/Login")}
-      className="flex button w-full"
+      onClick={() =>loggedIn? navigate("/"+name):navigate("/Login")}
+      className="flex button w-full justify-center items-center"
     >
-      <img src={chatbot} className="w-10 object-contain pt-1.5"></img>
+      <img src={chatbot} className="w-8 object-contain pt-1"></img>
 
-      <span className="mt-3.5 pl-2 font-semibold">{name}</span>
+      <span className="pl-2 font-semibold text-center">{name}</span>
     </button>
   );
 }

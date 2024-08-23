@@ -60,7 +60,7 @@ function Chatbot() {
       unique_id: email,
       message: question ? question : "Hi",
     });
-    const response = await api.post("/chat-bot", content);
+    const response = await api.post("/chat-bot/brain-tumor", content);
     setMessages([
       ...messages,
       { text: text, isBot: false },
@@ -106,9 +106,8 @@ function Chatbot() {
             <span className="text-white font-semibold">New chat</span>
           </button>
         </div>
-        <div className="bg-[rgb(96, 165 ,250)] backdrop-filter backdrop-blur-sm bg-opacity-50 rounded-xl px-6 bottom-10 absolute">
-          <Feature name="X Ray diagnosis" />
-          <Feature name="Medical record diagnosis" />
+        <div className="bg-[rgb(96, 165 ,250)] backdrop-filter backdrop-blur-sm bg-opacity-50 rounded-xl mx-5">
+          <Feature name="Diagnosis" />
         </div>
       </div>
       <div className="sidebar h-[93%] w-[70%] overflow-hidden">
@@ -143,7 +142,11 @@ function Chatbot() {
             onKeyDown={handleEnter}
           />
           <button
-            className={!question?"py-2 px-4 items-center":"py-2 px-4 items-center hover:bg-[#08f8cb]"}
+            className={
+              !question
+                ? "py-2 px-4 items-center"
+                : "py-2 px-4 items-center hover:bg-[#08f8cb]"
+            }
             onClick={handleSubmit}
             disabled={!question}
           >
