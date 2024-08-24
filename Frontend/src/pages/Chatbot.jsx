@@ -60,7 +60,7 @@ function Chatbot() {
       unique_id: email,
       message: question ? question : "Hi",
     });
-    const response = await api.post("/chat-bot/brain-tumor", content);
+    const response = await api.post("/chat-bot", content);
     setMessages([
       ...messages,
       { text: text, isBot: false },
