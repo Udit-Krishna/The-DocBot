@@ -5,21 +5,20 @@ from sqlalchemy import create_engine, Column, Integer, String, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from langchain_huggingface import HuggingFaceEndpoint
-from langchain.chains import LLMChain
-from langchain_core.prompts import PromptTemplate
-from dotenv import load_dotenv
-import os, pickle
+from langchain_community.vectorstores import FAISS
+from langchain.chains.question_answering import load_qa_chain
+from langchain_huggingface import HuggingFaceEmbeddings
+import os
 import numpy as np
-from tensorflow.keras.models import load_model
-from tensorflow.keras.utils import load_img,img_to_array
+from tensorflow.keras.models import load_model # type: ignore
+from tensorflow.keras.utils import load_img,img_to_array # type: ignore
+
+
 import logging
-
-
 logger = logging.getLogger('uvicorn.error')
 logger.setLevel(logging.DEBUG)
 
-
-
+from dotenv import load_dotenv
 load_dotenv()
 api_key = os.getenv('HUGGINGFACEHUB_API_TOKEN')
 
@@ -66,7 +65,7 @@ class Chat(Base):
     def __repr__(self):
         return f"{self.unique_id},{self.chat_content}"
 
-DATABASE_URL = "sqlite:///test.db"
+DATABASE_URL = "sqlite:///database.db"
 engine = create_engine(DATABASE_URL, echo=True)
 Base.metadata.create_all(bind=engine)
 
@@ -74,20 +73,36 @@ Session = sessionmaker(bind=engine)
 session = Session()
 
 llm = HuggingFaceEndpoint(
-    repo_id="meta-llama/Meta-Llama-3-8B-Instruct",
+    repo_id="mistralai/Mistral-Nemo-Instruct-2407",
     task="text-generation",
-    max_new_tokens=150,
+    max_new_tokens=180,
     do_sample=False,
-    temperature=0.1,
+    temperature=0.25,
     token=api_key
 )
-template = """<|begin_of_text|><|start_header_id|>system<|end_header_id|>
-You are an AI Medical Chatbot Assistant, provide informative responses to your inquiries. Do not repeat yourself in your responses and do not ask another question. Do not be verbose in your response and make it strictly around 200 words.
-If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-About the suggestion to consult a doctor, always have it in one line and make it short and crisp. Don't add any note. I need only the response to the question. Suggest medications if inquired.<|eot_id|>
-<|start_header_id|>user<|end_header_id|> {question} <|eot_id|><|start_header_id|>assistant<|end_header_id|>"""
-prompt = PromptTemplate.from_template(template)
-llm_chain = LLMChain(prompt=prompt, llm=llm)
+embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+medical_vector_store = FAISS.load_local("medical-vectorstore", embeddings, allow_dangerous_deserialization=True)
+brain_tumor_vector_store = FAISS.load_local("brain-tumor-vectorstore", embeddings, allow_dangerous_deserialization=True)
+
+def chatbot_response(user_question, age, gender, height, weight):
+    docs = medical_vector_store.similarity_search(user_question, k=3)
+    chain = load_qa_chain(llm, chain_type="stuff")
+    response = chain.run(input_documents=docs, question=
+    f"""You are an AI Medical Chatbot Assistant, provide informative responses to your inquiries. Do not repeat yourself in your responses and do not ask another question. Do not be verbose in your response and strictly never cross 150 words.
+If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. You are provided with documents related to the user question. Use the documents to answer the user question.
+If the answer is not available in the provided documents, suggest the appropriate doctor to consult and make it short and crisp. Suggest medications if inquired. Always answer in second person grammar. Do not add any note at the end of the response.
+Do not explicitly diagnose any medical condition. Context: The patient is a {age} years old {gender} of height {height}cms and weight {weight}kgs. You might use the chat history to provide the appropriate response: {user_question}""")
+    return response
+
+def brain_tumor_chatbot_response(user_question, age, gender, height, weight):
+    docs = brain_tumor_vector_store.similarity_search(user_question, k=3)
+    chain = load_qa_chain(llm, chain_type="stuff")
+    response = chain.run(input_documents=docs, question=f"""The patient is a {age} years old {gender} of height {height}cms and weight {weight}kgs. You are an AI Medical Chatbot Assistant, provide informative responses to your inquiries about Brain Tumor.
+The patient has some queries regarding Brain tumor and they have not been confirmed to have brain tumor. Do not repeat yourself in your responses and do not ask another question. Do not be verbose in your response and make it strictly around 150 words.
+If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. You are provided with documents related to the user question. Use the documents to answer the user question.
+If the answer is not available in the provided documents, suggest the appropriate doctor to consult and make it short and crisp. Always answer in second person grammar. Do not add any note at the end of the response.
+You might use the chat history to provide the appropriate response for the user's question: {user_question}""")
+    return response
 
 
 @app.post("/add-user", description="Add User to the Database")
@@ -109,7 +124,7 @@ async def add_user(request: Request):
 async def check_user(request :Request):
     data = await request.json()
     unique_id = data['unique_id']
-    results = session.query(User).filter( User.unique_id == unique_id)
+    results = session.query(User).filter(User.unique_id == unique_id)
     logger.debug(data)
     ans = []
     for row in results:
@@ -127,7 +142,7 @@ async def chat_bot(request: Request):
     unique_id = data['unique_id']
     message = data['message']
     if isFirst:
-        row = session.query( Chat).filter( Chat.unique_id == unique_id).first()
+        row = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         if row:
             print(row)
             session.delete(row)
@@ -135,42 +150,27 @@ async def chat_bot(request: Request):
         chat =  Chat(unique_id, " ")
         session.add(chat)
         session.commit()
-        results = session.query( User).filter( User.unique_id == unique_id).first()
-        message = f"I am a {results.age} years old {results.gender}. My height is {results.height}cms and my weight is {results.weight}kgs. " + message
-        response = llm_chain.run(question=message)
-        results = session.query( Chat).filter( Chat.unique_id == unique_id).first()
+        results = session.query(User).filter(User.unique_id == unique_id).first()
+        response = chatbot_response(message, results.age, results.gender, results.height, results.weight)
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         results.chat_content += message + response
         session.commit()
-        results = session.query( Chat).filter( Chat.unique_id == unique_id).first()
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         return JSONResponse(content={"Response" : response, "History": f"{results.chat_content}"}, status_code=200)
     else:
-        results = session.query( Chat).filter( Chat.unique_id == unique_id).first()
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         chat_content = results.chat_content
         message_now = chat_content +"\n"+ message
-        response = llm_chain.run(question=message_now)
+        results = session.query(User).filter(User.unique_id == unique_id).first()
+        response = chatbot_response(message_now, results.age, results.gender, results.height, results.weight)
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
         results.chat_content = message_now + response
         session.commit()
         return JSONResponse(content={"Response" : response, "History": f"{results.chat_content}"}, status_code=200)
 
-
-# @app.post("/predict/lung-cancer")
-# def predict_lung_cancer(file: UploadFile = File(...)):
-#     model = load_model("lung_cancer.keras")
-#     with open(f"{file.filename}", "wb+") as file_object:
-#         file_object.write(file.file.read())
-#     test_image = load_img(f'{file.filename}',target_size=(224,224))
-#     test_image = img_to_array(test_image)
-#     test_image = np.expand_dims(test_image,axis=0)
-#     result = model.predict(test_image)
-#     args = {'adenocarcinoma': 0, 'large.cell.carcinoma': 1, 'normal': 2, 'squamous.cell.carcinoma': 3}
-#     print(args)
-#     print(result)
-#     response = [k for k,v in args.items() if v == np.argmax(result)][0]
-#     return JSONResponse(content={"prediction": response}, status_code=200)
-
 @app.post("/predict/brain-tumor")
 def predict_brain_tumor(file: UploadFile = File(...)):
-    model = load_model('brain_tumor.keras')
+    model = load_model('models/brain_tumor.keras')
     with open(f"{file.filename}", "wb+") as file_object:
         file_object.write(file.file.read())
     test_image = load_img(f'{file.filename}',target_size=(64,64))
@@ -185,8 +185,38 @@ def predict_brain_tumor(file: UploadFile = File(...)):
         tumor = False
     return JSONResponse(content={"prediction": tumor}, status_code=200)
 
-
-
+@app.post("/chat-bot/brain-tumor")
+async def chat_bot(request: Request):
+    data = await request.json()
+    isFirst = data['isFirst']
+    unique_id = data['unique_id']
+    message = data['message']
+    if isFirst:
+        row = session.query(Chat).filter(Chat.unique_id == unique_id).first()
+        if row:
+            print(row)
+            session.delete(row)
+            session.commit()
+        chat =  Chat(unique_id, " ")
+        session.add(chat)
+        session.commit()
+        results = session.query(User).filter(User.unique_id == unique_id).first()
+        response = brain_tumor_chatbot_response(message, results.age, results.gender, results.height, results.weight)
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
+        results.chat_content += message + response
+        session.commit()
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
+        return JSONResponse(content={"Response" : response, "History": f"{results.chat_content}"}, status_code=200)
+    else:
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
+        chat_content = results.chat_content
+        message_now = chat_content +"\n"+ message
+        results = session.query(User).filter(User.unique_id == unique_id).first()
+        response = brain_tumor_chatbot_response(message_now, results.age, results.gender, results.height, results.weight)
+        results = session.query(Chat).filter(Chat.unique_id == unique_id).first()
+        results.chat_content = message_now + response
+        session.commit()
+        return JSONResponse(content={"Response" : response, "History": f"{results.chat_content}"}, status_code=200)
 
 
 

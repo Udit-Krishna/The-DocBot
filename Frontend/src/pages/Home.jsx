@@ -55,13 +55,12 @@ function Home() {
         </h6>
         <div className="flex relative z-50">
           <div className="pt-12 pl-16">
-            <div className="px-20 py-5 mt-8 ml-5 bg-[rgb(96, 165 ,250)] backdrop-filter backdrop-blur-sm bg-opacity-50 border-2 border-[#4cfdd4] rounded-xl">
+            <div className="px-20 py-16 mt-8 ml-5 bg-[rgb(96, 165 ,250)] backdrop-filter backdrop-blur-sm bg-opacity-50 border-2 border-[#4cfdd4] rounded-xl">
               <h6 className="text-2xl font-bold text-white drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] text-center">
                 How can we help you today?
               </h6>
               <Feature name="Chatbot" />
               <Feature name="Diagnosis" />
-              <Feature name="Medical record diagnosis" />
             </div>
           </div>
           <div className="pl-16 absolute right-20 -top-20">
